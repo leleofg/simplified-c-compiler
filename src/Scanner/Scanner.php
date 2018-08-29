@@ -8,17 +8,22 @@ class Scanner
 {
     private $line;
     private $column;
+    private $lexeme;
 
-    public function scanner()
+    public function __construct()
+    {
+        $this->line = 1;
+        $this->column = 1;
+        $this->lexeme = [];
+    }
+
+    public function scan()
     {
         $file = fopen (__DIR__. '/../codigo.txt', 'r');
 
         if(!$file) {
             echo "ERROR to open file"; exit;
         }
-
-        $line = 1;
-        $column = 1;
 
         while(!feof($file))
         {
@@ -28,21 +33,57 @@ class Scanner
 
             if($blankSpace) {
                 if($char == ' '){
-                    $column++;
+                    $this->column++;
+                    continue;
                 } elseif ($char == '\n'){
-                    $column = 0;
-                    $line++;
+                    $this->column = 0;
+                    $this->line++;
+                    continue;
                 } else {
-                    $column = $column+4;
+                    $this->column = $this->column+4;
+                    continue;
                 }
-            } else {
-                $dot = Util::isDot($char);
             }
 
-            echo $column;
-            echo $line; exit;
+            $dot = Util::isDot($char);
 
+            if($dot) {
+                echo 'dot';
+            }
+
+            if($char == "(") {
+                array_push($this->lexeme, ['type' => 1, 'token' => $char]);
+                continue;
+            }
+
+            if($char == ")") {
+                array_push($this->lexeme, ['type' => 2, 'token' => $char]);
+                continue;
+            }
+
+            if($char == "{") {
+                array_push($this->lexeme, ['type' => 3, 'token' => $char]);
+                continue;
+            }
+
+            if($char == "}") {
+                array_push($this->lexeme, ['type' => 4, 'token' => $char]);
+                continue;
+            }
+
+            if($char == ";") {
+                array_push($this->lexeme, ['type' => 5, 'token' => $char]);
+                continue;
+            }
+
+            if($char == ",") {
+                array_push($this->lexeme, ['type' => 3, 'token' => $char]);
+                continue;
+            }
         }
+
+        echo '<pre>';
+        print_r($this->lexeme); exit;
 
         fclose($file);
     }
