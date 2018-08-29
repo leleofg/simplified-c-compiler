@@ -1,0 +1,16 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Compiler\\": "src"
+        }
+    },
+    "name": "leo/compilador",
+    "description": "Compilador para a disciplina de Compiladores - UNICAP",
+    "authors": [
+        {
+            "name": "Leonardo",
+            "email": "leoo.farias@gmail.com"
+        }
+    ],
+    "require": {}
+}

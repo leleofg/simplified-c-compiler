@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/compilador.iml" filepath="$PROJECT_DIR$/.idea/compilador.iml" />
+      <module fileurl="file://$USER_HOME$/development/biafa_projeto/biafa_nfe/.idea/ex-distribuidora.iml" filepath="$USER_HOME$/development/biafa_projeto/biafa_nfe/.idea/ex-distribuidora.iml" />
+      <module fileurl="file://$USER_HOME$/development/midias_educativas/mas_php/.idea/mas_php.iml" filepath="$USER_HOME$/development/midias_educativas/mas_php/.idea/mas_php.iml" />
+    </modules>
+  </component>
+</project>
