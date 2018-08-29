@@ -19,67 +19,76 @@ class Scanner
 
     public function scan()
     {
-        $file = fopen (__DIR__. '/../codigo.txt', 'r');
+        try {
+            $file = fopen (__DIR__. '/../codigo.txt', 'r');
 
-        if(!$file) {
-            echo "ERROR to open file"; exit;
-        }
+            if(!$file) {
+                throw new \Exception("ERROR - fail to read file");
+            }
 
-        while(!feof($file))
-        {
-            $char = fgetc($file);
+            while(!feof($file)) {
+                $char = fgetc($file);
 
-            $blankSpace = Util::isBlankSpace($char);
+                $blankSpace = Util::isBlankSpace($char);
 
-            if($blankSpace) {
-                if($char == ' '){
+                if ($blankSpace) {
+                    if ($char == ' ') {
+                        $this->column++;
+                        continue;
+                    } elseif ($char == '\n') {
+                        $this->column = 0;
+                        $this->line++;
+                        continue;
+                    } else {
+                        $this->column = $this->column + 4;
+                        continue;
+                    }
+                }
+
+                $dot = Util::isDot($char);
+
+                if ($dot) {
+                    echo 'dot';
+                }
+
+                if ($char == "(") {
+                    array_push($this->lexeme, ['id' => 1, 'token' => $char]);
                     $this->column++;
                     continue;
-                } elseif ($char == '\n'){
-                    $this->column = 0;
-                    $this->line++;
+                }
+
+                if ($char == ")") {
+                    array_push($this->lexeme, ['id' => 2, 'token' => $char]);
+                    $this->column++;
                     continue;
-                } else {
-                    $this->column = $this->column+4;
+                }
+
+                if ($char == "{") {
+                    array_push($this->lexeme, ['id' => 3, 'token' => $char]);
+                    $this->column++;
+                    continue;
+                }
+
+                if ($char == "}") {
+                    array_push($this->lexeme, ['id' => 4, 'token' => $char]);
+                    $this->column++;
+                    continue;
+                }
+
+                if ($char == ";") {
+                    array_push($this->lexeme, ['id' => 5, 'token' => $char]);
+                    $this->column++;
+                    continue;
+                }
+
+                if ($char == ",") {
+                    array_push($this->lexeme, ['id' => 3, 'token' => $char]);
+                    $this->column++;
                     continue;
                 }
             }
-
-            $dot = Util::isDot($char);
-
-            if($dot) {
-                echo 'dot';
-            }
-
-            if($char == "(") {
-                array_push($this->lexeme, ['type' => 1, 'token' => $char]);
-                continue;
-            }
-
-            if($char == ")") {
-                array_push($this->lexeme, ['type' => 2, 'token' => $char]);
-                continue;
-            }
-
-            if($char == "{") {
-                array_push($this->lexeme, ['type' => 3, 'token' => $char]);
-                continue;
-            }
-
-            if($char == "}") {
-                array_push($this->lexeme, ['type' => 4, 'token' => $char]);
-                continue;
-            }
-
-            if($char == ";") {
-                array_push($this->lexeme, ['type' => 5, 'token' => $char]);
-                continue;
-            }
-
-            if($char == ",") {
-                array_push($this->lexeme, ['type' => 3, 'token' => $char]);
-                continue;
-            }
+        } catch (\Exception $ex) {
+            return $ex->getMessage();
         }
 
         echo '<pre>';
