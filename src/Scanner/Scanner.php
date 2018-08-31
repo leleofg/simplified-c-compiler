@@ -2,98 +2,70 @@
 
 namespace Compiler\Scanner;
 
-use Compiler\Util\Util;
+use Constantes;
 
 class Scanner
 {
-    private $line;
-    private $column;
-    private $lexeme;
+    private $line = 0;
+    private $column = 0;
 
-    public function __construct()
-    {
-        $this->line = 1;
-        $this->column = 1;
-        $this->lexeme = [];
-    }
-
-    public function scan()
+    public function scan($file)
     {
         try {
-            $file = fopen (__DIR__. '/../codigo.txt', 'r');
 
-            if(!$file) {
-                throw new \Exception("ERROR - fail to read file");
+            $char = $this->lookAhead($file);
+
+            while($this->isBlankSpace($char)) {
+                $char = $this->lookAhead($file);
+            }
+            if(is_numeric($char)){
+                $char = $this->lookAhead($file);
+
+                while(is_numeric($char)) {
+                    $char = $this->lookAhead($file);
+                }
+                if($char == '.') {
+                    echo 'ponto dps de um numero: ';
+                    var_dump($char); exit;
+                }
+
+            } else {
+                var_dump($this->column);
+                var_dump($this->line);
+                var_dump($char); exit;
             }
 
-            while(!feof($file)) {
-                $char = fgetc($file);
-
-                $blankSpace = Util::isBlankSpace($char);
-
-                if ($blankSpace) {
-                    if ($char == ' ') {
-                        $this->column++;
-                        continue;
-                    } elseif ($char == '\n') {
-                        $this->column = 0;
-                        $this->line++;
-                        continue;
-                    } else {
-                        $this->column = $this->column + 4;
-                        continue;
-                    }
-                }
-
-                $dot = Util::isDot($char);
-
-                if ($dot) {
-                    echo 'dot';
-                }
-
-                if ($char == "(") {
-                    array_push($this->lexeme, ['id' => 1, 'token' => $char]);
-                    $this->column++;
-                    continue;
-                }
-
-                if ($char == ")") {
-                    array_push($this->lexeme, ['id' => 2, 'token' => $char]);
-                    $this->column++;
-                    continue;
-                }
-
-                if ($char == "{") {
-                    array_push($this->lexeme, ['id' => 3, 'token' => $char]);
-                    $this->column++;
-                    continue;
-                }
-
-                if ($char == "}") {
-                    array_push($this->lexeme, ['id' => 4, 'token' => $char]);
-                    $this->column++;
-                    continue;
-                }
-
-                if ($char == ";") {
-                    array_push($this->lexeme, ['id' => 5, 'token' => $char]);
-                    $this->column++;
-                    continue;
-                }
-
-                if ($char == ",") {
-                    array_push($this->lexeme, ['id' => 3, 'token' => $char]);
-                    $this->column++;
-                    continue;
-                }
-            }
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
+    }
 
-        echo '<pre>';
-        print_r($this->lexeme); exit;
+    private function lookAhead(&$file)
+    {
+        $char = fgetc($file);
 
-        fclose($file);
+        if ($char == ' ') {
+            $this->column++;
+            return $char;
+        } elseif ($char == '\n') {
+            $this->column = 0;
+            $this->line++;
+            return $char;
+        } elseif ($char == '\t') {
+            $this->column = $this->column + 4;
+            return $char;
+        } else {
+            $this->column++;
+            return $char;
+        }
+    }
+
+    private function isBlankSpace(string $char): bool
+    {
+        if($char == ' ' || $char == '\n' || $char == '\t') {
+            return true;
+        }
+
+        return false;
     }
 }

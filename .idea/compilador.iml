@@ -6,5 +6,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="ex-distribuidora" />
     <orderEntry type="module" module-name="mas_php" />
+    <orderEntry type="module" module-name="gde_php" />
   </component>
 </module>
