@@ -22,4 +22,15 @@ class Constantes
     public static $PR_FLOAT = 16;
     public static $PR_CHAR = 17;
     public static $IDENTIFICADOR = 18;
+    public static $ADICAO = 19;
+    public static $SUBTRACAO = 20;
+    public static $MULTIPLICACAO = 21;
+    public static $DIVISAO = 22;
+    public static $DIFERENTE = 23;
+    public static $MAIOR = 24;
+    public static $MAIOR_IGUAL = 25;
+    public static $MENOR = 26;
+    public static $MENOR_IGUAL = 27;
+    public static $ATRIBUICAO = 28;
+    public static $COMPARACAO = 29;
 }
