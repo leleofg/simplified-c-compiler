@@ -9,8 +9,9 @@ $fileName = $argv[1];
 $file = fopen (__DIR__. '/'. $fileName, 'r');
 
 $scanner = new Scanner();
-$scanner->scan($file);
+$scan = $scanner->scan($file);
 
+var_dump($scan);
 echo 'Sem erro';
 
 fclose($file);

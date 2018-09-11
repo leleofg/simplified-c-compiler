@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$USER_HOME$/development/biafa_projeto/biafa_nfe" vcs="Git" />
     <mapping directory="$USER_HOME$/development/midias_educativas/gde_php" vcs="Git" />
     <mapping directory="$USER_HOME$/development/midias_educativas/mas_php" vcs="Git" />
