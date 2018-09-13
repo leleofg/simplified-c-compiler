@@ -151,6 +151,22 @@ class Scanner
                     return $this->returnLexeme(Constantes::$DIVISAO, "/");
                 }
 
+            } elseif($char == "'") {
+                $this->addBuffer($char);
+                $char = $this->lookAhead($file);
+
+                $this->addBuffer($char);
+                $char = $this->lookAhead($file);
+
+                if($char != "'") {
+                    throw new \Exception("Erro na linha: {$this->line}, coluna: {$this->column}. \n");
+                }
+
+                $this->addBuffer($char);
+                $this->lookAhead($file);
+
+                return $this->returnLexeme(Constantes::$CHAR, $this->buffer);
+
             } elseif($char == "!") {
 
                 $this->addBuffer($char);

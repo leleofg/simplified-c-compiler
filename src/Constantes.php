@@ -33,4 +33,5 @@ class Constantes
     public static $MENOR_IGUAL = 27;
     public static $ATRIBUICAO = 28;
     public static $COMPARACAO = 29;
+    public static $CHAR = 30;
 }
