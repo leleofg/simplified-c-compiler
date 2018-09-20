@@ -159,7 +159,7 @@ class Scanner
                 $char = $this->lookAhead($file);
 
                 if($char != "'") {
-                    throw new \Exception("Erro na linha: {$this->line}, coluna: {$this->column}. \n");
+                    throw new \Exception("Erro na linha: {$this->line}, coluna: {$this->column}. Caractere mal formado. \n");
                 }
 
                 $this->addBuffer($char);
@@ -178,7 +178,7 @@ class Scanner
                     return $this->returnLexeme(Constantes::$DIFERENTE, $this->buffer);
                 }
 
-                throw new \Exception("Erro exclamação sozinha. Espera-se um '=' depois dela. \n");
+                throw new \Exception( "Erro na linha: {$this->line}, coluna: {$this->column}. Erro exclamação sozinha, espera-se um '=' depois dela. \n");
 
             } elseif($char == ">") {
 
