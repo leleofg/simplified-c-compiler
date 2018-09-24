@@ -2,7 +2,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-use Compiler\Scanner\Scanner;
+use Compiler\Parser\Parser;
 
 if(!isset($argv[1])) {
     echo "Você precisa informar o nome do arquivo a ser lido: 'codigo.txt' \n";
@@ -20,9 +20,7 @@ if (!file_exists($caminho)) {
 
 $file = fopen ($caminho, 'r');
 
-$scanner = new Scanner();
-$scan = $scanner->scan($file);
-
-//chamar o parser aqui
+$parser = new Parser($file);
+$parser->parse();
 
 fclose($file);

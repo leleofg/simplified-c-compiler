@@ -1,0 +1,6 @@
+//
+int main() {
+    float h;int c;float w,k,a;
+
+    c = 'x'*'2';
+}

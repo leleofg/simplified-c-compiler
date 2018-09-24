@@ -6,8 +6,8 @@ class Constantes
 {
     public static $NUM_INT = 1;
     public static $NUM_FLOAT = 2;
-    public static $FECHA_PARENTESE = 3;
-    public static $ABRE_PARENTESE = 4;
+    public static $ABRE_PARENTESE = 3;
+    public static $FECHA_PARENTESE = 4;
     public static $ABRE_CHAVE = 5;
     public static $FECHA_CHAVE = 6;
     public static $VIRGULA = 7;

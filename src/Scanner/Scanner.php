@@ -9,300 +9,355 @@ class Scanner
     private $line;
     private $column;
     private $buffer;
+    private static $reader;
 
     public function __construct()
     {
         $this->line = 0;
         $this->column = 0;
         $this->buffer = [];
+        self::$reader = null;
     }
 
     public function scan($file)
     {
         try {
-            $char = $this->lookAhead($file);
-
-            while(ord($char) == 32 or ord($char) == 10 or ord($char) == 9) {
-                $char = $this->lookAhead($file);
+            if(is_null(self::$reader)) {
+                $this->count();
+                self::$reader = fgetc($file);
             }
-            if(is_numeric($char)) {
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
 
-                while(is_numeric($char)) {
-                    $this->addBuffer($char);
-                    $char = $this->lookAhead($file);
+            while(ord(self::$reader) == 32 or ord(self::$reader) == 10 or ord(self::$reader) == 9) {
+                $this->count();
+                self::$reader = fgetc($file);
+            }
+
+            if(is_numeric(self::$reader)) {
+                $this->addBuffer();
+                $this->count();
+                self::$reader = fgetc($file);
+
+                while(is_numeric(self::$reader)) {
+                    $this->addBuffer();
+                    $this->count();
+                    self::$reader = fgetc($file);
                 }
 
-                if($char != ".") { // se for qualquer coisa diferente de ponto ele retorna
-                    return $this->returnLexeme(Constantes::$NUM_INT, $this->buffer);
+                if(self::$reader != ".") {
+                    $this->buffer = [];
+                    return Constantes::$NUM_INT;
                 }
 
-                if($char == ".") { //se for um ponto, pode ser um float
-                    $this->addBuffer($char);
-                    $char = $this->lookAhead($file);
+                if(self::$reader == ".") {
+                    $this->addBuffer();
+                    $this->count();
+                    self::$reader = fgetc($file);
 
-                    if(!is_numeric($char)) { //se depois do ponto nao for um número é um float mal formado
-                        throw new \Exception("Erro na linha: {$this->line}, coluna: {$this->column}. \n");
+                    if(!is_numeric(self::$reader)) {
+                        throw new \Exception("ERRO: FLOAT MAL FORMADO. Erro na linha: {$this->line}, coluna: {$this->column}. \n");
                     }
 
-                    while(is_numeric($char)) {
-                        $this->addBuffer($char);
-                        $char = $this->lookAhead($file);
+                    while(is_numeric(self::$reader)) {
+                        $this->addBuffer();
+                        $this->count();
+                        self::$reader = fgetc($file);
                     }
 
-                    return $this->returnLexeme(Constantes::$NUM_FLOAT, $this->buffer);
+                    return Constantes::$NUM_FLOAT;
                 }
 
-            } elseif($char == ".") {
+            } elseif(self::$reader == ".") {
 
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
+                $this->addBuffer();
+                $this->count();
+                self::$reader = fgetc($file);
 
-                if(!is_numeric($char)) { //se não for um dígito depois do ponto já pode retornar o erro
-                    throw new \Exception("Erro na linha: {$this->line}, coluna: {$this->column}. \n");
+                if(!is_numeric(self::$reader)) {
+                    throw new \Exception("Depois de um ponto, precisa de ser um número para ser um float bem formado. Erro na linha: {$this->line}, coluna: {$this->column}. \n");
                 }
 
-                while(is_numeric($char)) {
-                    $this->addBuffer($char);
-                    $char = $this->lookAhead($file);
+                while(is_numeric(self::$reader)) {
+                    $this->addBuffer();
+                    $this->count();
+                    self::$reader = fgetc($file);
                 }
 
-                return $this->returnLexeme(Constantes::$NUM_FLOAT, $this->buffer);
+                return Constantes::$NUM_FLOAT;
 
-            } elseif($char == ")") {
+            } elseif(self::$reader == "(") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$FECHA_PARENSETE, $this->buffer);
+                return Constantes::$ABRE_PARENTESE;
 
-            } elseif($char == "(") {
+            } elseif(self::$reader == ")") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$ABRE_PARENTESE, $this->buffer);
+                return Constantes::$FECHA_PARENTESE;
 
-            } elseif($char == "{") {
+            } elseif(self::$reader == "{") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$ABRE_CHAVE, $this->buffer);
+                return Constantes::$ABRE_CHAVE;
 
-            } elseif($char == "}") {
+            } elseif(self::$reader == "}") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$FECHA_CHAVE, $this->buffer);
+                return Constantes::$FECHA_CHAVE;
 
-            } elseif($char == ",") {
+            } elseif(self::$reader == ",") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$VIRGULA, $this->buffer);
+                return Constantes::$VIRGULA;
 
-            } elseif($char == ";") {
+            } elseif(self::$reader == ";") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$PONTO_VIRGULA, $this->buffer);
+                return Constantes::$PONTO_VIRGULA;
 
-            } elseif($char == "+") {
+            } elseif(self::$reader == "+") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$ADICAO, $this->buffer);
+                return Constantes::$ADICAO;
 
-            } elseif($char == "-") {
+            } elseif(self::$reader == "-") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$SUBTRACAO, $this->buffer);
+                return Constantes::$SUBTRACAO;
 
-            } elseif($char == "*") {
+            } elseif(self::$reader == "*") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
-                return $this->returnLexeme(Constantes::$MULTIPLICACAO, $this->buffer);
+                return Constantes::$MULTIPLICACAO;
 
-            } elseif($char == "/") {
-                $char = $this->lookAhead($file);
+            } elseif(self::$reader == "/") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                if ($char == "/") {
+                if (self::$reader == "/") {
                     while (true) {
-                        $char = $this->lookAhead($file);
+                        self::$reader = fgetc($file);
 
-                        if (ord($char) == 10 or feof($file)) {
+                        if (ord(self::$reader) == 10 or feof($file)) {
+                            self::$reader = fgetc($file);
                             return $this->scan($file);
                         }
                     }
-                } elseif ($char == "*") {
+                } elseif (self::$reader == "*") {
                     while (true) {
-                        $char = $this->lookAhead($file);
+                        $this->count();
+                        self::$reader = fgetc($file);
 
-                        if ($char == "*") {
-                            $char = $this->lookAhead($file);
+                        if (self::$reader == "*") {
+                            $this->count();
+                            self::$reader = fgetc($file);
 
-                            if ($char == "/" or feof($file)) {
+                            if (self::$reader == "/" or feof($file)) {
+                                self::$reader = fgetc($file);
                                 return $this->scan($file);
                             }
                         }
                     }
                 } else {
-                    return $this->returnLexeme(Constantes::$DIVISAO, "/");
+                    $this->buffer = [];
+                    return Constantes::$DIVISAO;
                 }
 
-            } elseif($char == "'") {
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
+            } elseif(self::$reader == "'") {
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
+                $this->count();
+                self::$reader = fgetc($file);
 
-                if($char != "'") {
+                if(self::$reader != "'") {
                     throw new \Exception("Erro na linha: {$this->line}, coluna: {$this->column}. Caractere mal formado. \n");
                 }
 
-                $this->addBuffer($char);
-                $this->lookAhead($file);
+                self::$reader = fgetc($file);
+                return Constantes::$CHAR;
 
-                return $this->returnLexeme(Constantes::$CHAR, $this->buffer);
+            } elseif(self::$reader == "!") {
 
-            } elseif($char == "!") {
+                $this->addBuffer();
+                $this->count();
+                self::$reader = fgetc($file);
 
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
+                if (self::$reader == "=") {
+                    $this->count();
+                    $this->buffer = [];
+                    self::$reader = fgetc($file);
 
-                if ($char == "=") {
-                    $this->addBuffer($char);
-                    $this->lookAhead($file);
-                    return $this->returnLexeme(Constantes::$DIFERENTE, $this->buffer);
+                    return Constantes::$DIFERENTE;
                 }
 
                 throw new \Exception( "Erro na linha: {$this->line}, coluna: {$this->column}. Erro exclamação sozinha, espera-se um '=' depois dela. \n");
 
-            } elseif($char == ">") {
+            } elseif(self::$reader == ">") {
 
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
+                $this->addBuffer();
+                $this->count();
+                self::$reader = fgetc($file);
 
-                if ($char == "=") {
-                    $this->addBuffer($char);
-                    $this->lookAhead($file);
-                    return $this->returnLexeme(Constantes::$MAIOR_IGUAL, $this->buffer);
+                if (self::$reader == "=") {
+
+                    $this->addBuffer();
+                    $this->count();
+                    self::$reader = fgetc($file);
+
+                    return Constantes::$MAIOR_IGUAL;
                 }
 
-                return $this->returnLexeme(Constantes::$MAIOR, $this->buffer);
+                return Constantes::$MAIOR;
 
-            } elseif($char == "<") {
+            } elseif(self::$reader == "<") {
 
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
+                $this->addBuffer();
+                $this->count();
+                self::$reader = fgetc($file);
 
-                if ($char == "=") {
-                    $this->addBuffer($char);
-                    $this->lookAhead($file);
-                    return $this->returnLexeme(Constantes::$MENOR_IGUAL, $this->buffer);
+                if (self::$reader == "=") {
+
+                    $this->addBuffer();
+                    $this->count();
+                    self::$reader = fgetc($file);
+
+                    return Constantes::$MENOR_IGUAL;
                 }
 
-                return $this->returnLexeme(Constantes::$MENOR, $this->buffer);
+                return Constantes::$MENOR;
 
-            } elseif($char == "=") {
+            } elseif(self::$reader == "=") {
 
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
+                $this->addBuffer();
+                $this->count();
+                self::$reader = fgetc($file);
 
-                if ($char == "=") {
-                    $this->addBuffer($char);
-                    $this->lookAhead($file);
-                    return $this->returnLexeme(Constantes::$COMPARACAO, $this->buffer);
+                if (self::$reader == "=") {
+                    $this->addBuffer();
+                    $this->count();
+                    self::$reader = fgetc($file);
+
+                    return Constantes::$COMPARACAO;
                 }
 
-                return $this->returnLexeme(Constantes::$ATRIBUICAO, $this->buffer);
+                $this->buffer = [];
+                return Constantes::$ATRIBUICAO;
 
-            } elseif($this->isLetter($char) or $char == "_") {
+            } elseif($this->isLetter(self::$reader) or self::$reader == "_") {
 
-                $this->addBuffer($char);
-                $char = $this->lookAhead($file);
+                $this->addBuffer();
+                $this->count();
+                self::$reader = fgetc($file);
 
-                while ($this->isLetter($char) or is_numeric($char) or $char == "_") {
-                    $this->addBuffer($char);
-                    $char = $this->lookAhead($file);
+                while ($this->isLetter(self::$reader) or is_numeric(self::$reader) or self::$reader == "_") {
+                    $this->addBuffer();
+                    $this->count();
+                    $check = $this->checkReservedWord($this->buffer, true);
+
+                    if (!empty($check)) {
+                        $this->buffer = [];
+                        self::$reader = fgetc($file);
+                        return $check;
+                    }
+
+                    self::$reader = fgetc($file);
+                    continue;
                 }
 
+                $this->buffer = [];
                 return $this->checkReservedWord($this->buffer);
+            } elseif (feof($file)) {
+                echo 'fim de arquivo'; exit;
+            } else {
+                echo 'caractere nao reconhecido'; exit;
             }
 
         } catch (\Exception $ex) {
             echo $ex->getMessage(); exit;
         }
     }
-    
-    private function addBuffer(string $char)
+
+    private function addBuffer()
     {
-        array_push($this->buffer, $char);
+        array_push($this->buffer, self::$reader);
     }
 
-    private function lookAhead(&$file): string
+    private function count(): void
     {
-        $char = fgetc($file);
-
-        if (ord($char) == 32) { //espaço em branco
+        if (ord(self::$reader) == 32) { //espaço em branco
             $this->column++;
-        } elseif (ord($char) == 10) { //enter
+        } elseif (ord(self::$reader) == 10) { //enter
             $this->column = 0;
             $this->line++;
-        } elseif (ord($char) == 9) { //tab
+        } elseif (ord(self::$reader) == 9) { //tab
             $this->column = $this->column + 4;
         } else {
             $this->column++;
         }
-
-        return $char;
     }
 
-    private function returnLexeme(int $id, $buffer): array
+    private function isLetter(): bool
     {
-        if(is_array($buffer)) {
-            return ['id' => $id, 'lexeme' => implode("", $buffer)];
-        }
-
-        return ['id' => $id, 'lexeme' => $buffer];
-    }
-
-    private function isLetter($char): bool
-    {
-        if(ord($char ) >= 65 && ord($char) <= 90 or ord($char) >= 97 && ord($char) <= 122) {
+        if(ord(self::$reader) >= 65 && ord(self::$reader) <= 90 or ord(self::$reader) >= 97 && ord(self::$reader) <= 122) {
             return true;
         }
 
         return false;
     }
 
-    function checkReservedWord(array $buffer): array
+    function checkReservedWord(array $buffer, $flag = false)
     {
         $lexeme = implode("", $buffer);
 
         switch ($lexeme) {
             case "main":
-                return $this->returnLexeme(Constantes::$PR_MAIN, $this->buffer);
+                return Constantes::$PR_MAIN;
             case "if":
-                return $this->returnLexeme(Constantes::$PR_IF, $this->buffer);
+                return Constantes::$PR_IF;
             case "else":
-                return $this->returnLexeme(Constantes::$PR_ELSE, $this->buffer);
+                return Constantes::$PR_ELSE;
             case "while":
-                return $this->returnLexeme(Constantes::$PR_WHILE, $this->buffer);
+                return Constantes::$PR_WHILE;
             case "do":
-                return $this->returnLexeme(Constantes::$PR_DO, $this->buffer);
+                return Constantes::$PR_DO;
             case "for":
-                return $this->returnLexeme(Constantes::$PR_FOR, $this->buffer);
+                return Constantes::$PR_FOR;
             case "int":
-                return $this->returnLexeme(Constantes::$PR_INT, $this->buffer);
+                return Constantes::$PR_INT;
             case "float":
-                return $this->returnLexeme(Constantes::$PR_FLOAT, $this->buffer);
+                return Constantes::$PR_FLOAT;
             case "char":
-                return $this->returnLexeme(Constantes::$PR_CHAR, $this->buffer);
+                return Constantes::$PR_CHAR;
             default:
-                return $this->returnLexeme(Constantes::$IDENTIFICADOR, $this->buffer);
+                if($flag) {
+                    return [];
+                }
+                return Constantes::$IDENTIFICADOR;
         }
+    }
+
+    /**
+     * @return int
+     */
+    public function getLine(): int
+    {
+        return $this->line;
+    }
+
+    /**
+     * @return int
+     */
+    public function getColumn(): int
+    {
+        return $this->column;
     }
 }
