@@ -54,7 +54,7 @@ class Parser
 
 
         } catch (\Exception $ex) {
-            echo $ex->getMessage(); exit;
+            echo $ex->getMessage(); die();
         }
     }
 
@@ -78,7 +78,6 @@ class Parser
             throw new \Exception( "ERRO! Programa espera um fecha chave. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
         }
 
-        echo "fecha chave \n";
         return $this->scanner->scan($this->file);
     }
 
@@ -107,8 +106,6 @@ class Parser
                 throw new \Exception( "ERRO, falta ponto e virgula para finalizar a declaração de variável. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
             }
 
-            echo "ponto e vírgula \n";
-
             return $this->scanner->scan($this->file);
         }
 
@@ -117,17 +114,14 @@ class Parser
     private function command(int $id)
     {
         if($id == Constantes::$IDENTIFICADOR) {
-            echo "identificador \n";
             return $this->assignment($id);
         }
 
         if($id == Constantes::$ABRE_CHAVE) {
-            echo "abre chave \n";
             return $this->block($id);
         }
 
         if($id == Constantes::$PR_DO or $id == Constantes::$PR_WHILE) {
-            echo "iteração \n";
             return $this->iteration($id);
         }
 
@@ -144,6 +138,8 @@ class Parser
                 throw new \Exception( "ERRO! Espera-se um abre parentese. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
             }
 
+            $id = $this->scanner->scan($this->file);
+
             if($id == Constantes::$IDENTIFICADOR or $id == Constantes::$PR_IF or $id == Constantes::$PR_ELSE or $id == Constantes::$ABRE_CHAVE or $id == Constantes::$PR_WHILE or $id == Constantes::$PR_DO) {
                 $id = $this->command($id);
             }
@@ -153,7 +149,7 @@ class Parser
             $id = $this->scanner->scan($this->file);
 
             if($id == Constantes::$IDENTIFICADOR or $id == Constantes::$PR_IF or $id == Constantes::$PR_ELSE or $id == Constantes::$ABRE_CHAVE or $id == Constantes::$PR_WHILE or $id == Constantes::$PR_DO) {
-                $id = $this->command($id);
+                return $this->command($id);
             }
 
             throw new \Exception( "ERRO! comando inválido. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
@@ -172,11 +168,9 @@ class Parser
             throw new \Exception( "ERRO, falta atribuição. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
         }
 
-        echo "atribuição\n";
         $id = $this->aritExpr();
 
         if($id == Constantes::$PONTO_VIRGULA) {
-            echo "ponto e vírgula \n";
             return $this->scanner->scan($this->file);
         }
     }
@@ -184,7 +178,6 @@ class Parser
     private function iteration(int $id)
     {
         if($id == Constantes::$PR_DO) {
-            echo "do \n";
             $id = $this->scanner->scan($this->file);
 
             $id = $this->command($id);
@@ -193,15 +186,11 @@ class Parser
                 throw new \Exception( "ERRO, falta while do DO. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
             }
 
-            echo "while \n";
-
             $id = $this->scanner->scan($this->file);
 
             if($id != Constantes::$ABRE_PARENTESE) {
                 throw new \Exception( "ERRO, falta um abre parenteses depois do while. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
             }
-
-            echo "expressao relacional \n";
 
             $id = $this->relationalExpr();
 
@@ -215,32 +204,25 @@ class Parser
                 throw new \Exception( "ERRO, falta um ponto e vírgula logo após o fecha parentese depois de uma expressao relacional. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
             }
 
-            echo "ponto e vírgula \n";
-
             return $this->scanner->scan($this->file);
-        } else {
-            echo "while\n";
+        }
 
-            $id = $this->scanner->scan($this->file);
+        $id = $this->scanner->scan($this->file);
 
-            if($id != Constantes::$ABRE_PARENTESE) {
-                throw new \Exception( "ERRO, falta um abre parenteses depois do while. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
-            }
+        if($id != Constantes::$ABRE_PARENTESE) {
+            throw new \Exception( "ERRO, falta um abre parenteses depois do while. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
+        }
 
-            echo "expressao relacional \n";
+        $id = $this->relationalExpr();
 
-            $id = $this->relationalExpr();
+        if($id != Constantes::$FECHA_PARENTESE) {
+            throw new \Exception( "ERRO, falta um fecha parentese depois de uma expressao relacional. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
+        }
 
-            if($id != Constantes::$FECHA_PARENTESE) {
-                throw new \Exception( "ERRO, falta um fecha parentese depois de uma expressao relacional. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
-            }
+        $id = $this->scanner->scan($this->file);
 
-            $id = $this->scanner->scan($this->file);
-
-
-
-            echo 'massa ate aqui'; exit;
-
+        if($id == Constantes::$IDENTIFICADOR or $id == Constantes::$PR_IF or $id == Constantes::$PR_ELSE or $id == Constantes::$ABRE_CHAVE or $id == Constantes::$PR_WHILE or $id == Constantes::$PR_DO) {
+            return $this->command($id);
         }
     }
 
@@ -249,7 +231,6 @@ class Parser
         $id = $this->aritExpr();
 
         if($id == Constantes::$COMPARACAO or $id == Constantes::$DIFERENTE or $id == Constantes::$MAIOR or $id == Constantes::$MENOR or $id == Constantes::$MAIOR_IGUAL or $id == Constantes::$MENOR_IGUAL) {
-            echo "expressao aritmética \n";
             return $this->aritExpr();
         }
     }
@@ -257,7 +238,6 @@ class Parser
     private function aritExpr()
     {
         $id = $this->term();
-        echo $id . "\n";
         $aux = $this->aritExprAux($id);
 
         if(is_null($aux)) {
@@ -272,8 +252,6 @@ class Parser
         if($id != Constantes::$ADICAO and $id != Constantes::$SUBTRACAO) {
             return null;
         }
-
-        echo "adição ou substração\n";
 
         $id = $this->term();
         $aux = $this->aritExprAux($id);
@@ -308,8 +286,6 @@ class Parser
             return null;
         }
 
-        echo "multiplicação ou divisão \n";
-
         $id = $this->factor();
         $aux = $this->auxTerm($id);
 
@@ -323,7 +299,6 @@ class Parser
     private function factor()
     {
         $id = $this->scanner->scan($this->file);
-        echo "-> " .$id . "\n";
 
         if($id == Constantes::$ABRE_PARENTESE) {
             $this->aritExpr();

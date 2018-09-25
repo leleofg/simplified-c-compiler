@@ -13,7 +13,7 @@ class Scanner
 
     public function __construct()
     {
-        $this->line = 0;
+        $this->line = 1;
         $this->column = 0;
         $this->buffer = [];
         self::$reader = null;
@@ -63,6 +63,7 @@ class Scanner
                         self::$reader = fgetc($file);
                     }
 
+                    $this->buffer = [];
                     return Constantes::$NUM_FLOAT;
                 }
 
@@ -82,6 +83,7 @@ class Scanner
                     self::$reader = fgetc($file);
                 }
 
+                $this->buffer = [];
                 return Constantes::$NUM_FLOAT;
 
             } elseif(self::$reader == "(") {
@@ -276,13 +278,13 @@ class Scanner
                 $this->buffer = [];
                 return $this->checkReservedWord($this->buffer);
             } elseif (feof($file)) {
-                echo "FIM\n"; exit;
+                echo "FIM\n"; die();
             } else {
-                echo 'Caractere não reconhecido'; exit;
+                echo "Caractere não reconhecido\n"; die();
             }
 
         } catch (\Exception $ex) {
-            echo $ex->getMessage(); exit;
+            echo $ex->getMessage(); die();
         }
     }
 
