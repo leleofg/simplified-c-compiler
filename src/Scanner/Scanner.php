@@ -276,9 +276,9 @@ class Scanner
                 $this->buffer = [];
                 return $this->checkReservedWord($this->buffer);
             } elseif (feof($file)) {
-                echo 'fim de arquivo'; exit;
+                echo "FIM\n"; exit;
             } else {
-                echo 'caractere nao reconhecido'; exit;
+                echo 'Caractere não reconhecido'; exit;
             }
 
         } catch (\Exception $ex) {
