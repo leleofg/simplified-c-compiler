@@ -108,7 +108,6 @@ class Parser
 
             return $this->scanner->scan($this->file);
         }
-
     }
 
     private function command(int $id)
@@ -140,8 +139,8 @@ class Parser
 
             $id = $this->scanner->scan($this->file);
 
-            if($id == Constantes::$IDENTIFICADOR or $id == Constantes::$PR_IF or $id == Constantes::$PR_ELSE or $id == Constantes::$ABRE_CHAVE or $id == Constantes::$PR_WHILE or $id == Constantes::$PR_DO) {
-                $id = $this->command($id);
+            if($id == Constantes::$ABRE_CHAVE or $id == Constantes::$IDENTIFICADOR or $id == Constantes::$PR_IF or $id == Constantes::$PR_ELSE or $id == Constantes::$PR_WHILE or $id == Constantes::$PR_DO) {
+                return $this->command($id);
             }
         }
 

@@ -278,9 +278,9 @@ class Scanner
                 $this->buffer = [];
                 return $this->checkReservedWord($this->buffer);
             } elseif (feof($file)) {
-                echo "FIM\n"; die();
+                throw new \Exception( "Scaneado e Parseado com sucesso! \n");
             } else {
-                echo "Caractere não reconhecido\n"; die();
+                throw new \Exception( "Erro na linha: {$this->line}, coluna: {$this->column}. Caractere não reconhecido. \n");
             }
 
         } catch (\Exception $ex) {
