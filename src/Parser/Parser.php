@@ -169,9 +169,11 @@ class Parser
 
         $id = $this->aritExpr();
 
-        if($id == Constantes::$PONTO_VIRGULA) {
-            return $this->scanner->scan($this->file);
+        if($id != Constantes::$PONTO_VIRGULA) {
+            throw new \Exception( "ERRO, falta um ponto e virgula. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
         }
+
+        return $this->scanner->scan($this->file);
     }
 
     private function iteration(int $id)
