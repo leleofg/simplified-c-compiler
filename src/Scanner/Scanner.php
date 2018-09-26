@@ -210,14 +210,14 @@ class Scanner
                 self::$reader = fgetc($file);
 
                 if (self::$reader == "=") {
-
-                    $this->addBuffer();
                     $this->count();
+                    $this->buffer = [];
                     self::$reader = fgetc($file);
 
                     return Constantes::$MAIOR_IGUAL;
                 }
 
+                $this->buffer = [];
                 return Constantes::$MAIOR;
 
             } elseif(self::$reader == "<") {
@@ -228,13 +228,14 @@ class Scanner
 
                 if (self::$reader == "=") {
 
-                    $this->addBuffer();
                     $this->count();
+                    $this->buffer = [];
                     self::$reader = fgetc($file);
 
                     return Constantes::$MENOR_IGUAL;
                 }
 
+                $this->buffer = [];
                 return Constantes::$MENOR;
 
             } elseif(self::$reader == "=") {
@@ -244,8 +245,9 @@ class Scanner
                 self::$reader = fgetc($file);
 
                 if (self::$reader == "=") {
-                    $this->addBuffer();
+
                     $this->count();
+                    $this->buffer = [];
                     self::$reader = fgetc($file);
 
                     return Constantes::$COMPARACAO;
@@ -278,7 +280,7 @@ class Scanner
                 $this->buffer = [];
                 return $this->checkReservedWord($this->buffer);
             } elseif (feof($file)) {
-                throw new \Exception( "Scaneado e Parseado com sucesso! \n");
+                die();
             } else {
                 throw new \Exception( "Erro na linha: {$this->line}, coluna: {$this->column}. Caractere não reconhecido. \n");
             }
