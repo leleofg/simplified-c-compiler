@@ -369,7 +369,8 @@ class Parser
     private function findInTableSymbols($lexema)
     {
         if(!empty($this->tableSymbols)) {
-            foreach($this->tableSymbols as $tb) {
+            $tableSymbolsReverse = array_reverse($this->tableSymbols, true);
+            foreach($tableSymbolsReverse as $tb) {
                 if($tb['scope'] == $this->scope && $tb['lexeme'] == $lexema) {
                     throw new \Exception( "ERRO! Variável com o mesmo nome no mesmo escopo. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
                 }
@@ -379,7 +380,8 @@ class Parser
 
     private function deleteTableSymbols()
     {
-        foreach($this->tableSymbols as $tb) {
+        $tableSymbolsReverse = array_reverse($this->tableSymbols, true);
+        foreach($tableSymbolsReverse as $tb) {
             if($tb['scope'] == $this->scope) {
                 array_pop($this->tableSymbols);
             }
@@ -388,7 +390,8 @@ class Parser
 
     private function searchInTableSymbols($lexeme)
     {
-        foreach($this->tableSymbols as $tb) {
+        $tableSymbolsReverse = array_reverse($this->tableSymbols, true);
+        foreach($tableSymbolsReverse as $tb) {
             if($tb['lexeme'] == $lexeme) {
                 return $tb['id'];
             }
