@@ -44,8 +44,9 @@ class Scanner
                 }
 
                 if(self::$reader != ".") {
+                    $bufferAux = $this->buffer;
                     $this->buffer = [];
-                    return Constantes::$NUM_INT;
+                    return $this->returnLexeme(Constantes::$NUM_INT, $bufferAux);
                 }
 
                 if(self::$reader == ".") {
@@ -63,8 +64,9 @@ class Scanner
                         self::$reader = fgetc($file);
                     }
 
+                    $bufferAux = $this->buffer;
                     $this->buffer = [];
-                    return Constantes::$NUM_FLOAT;
+                    return $this->returnLexeme(Constantes::$NUM_FLOAT, $bufferAux);
                 }
 
             } elseif(self::$reader == ".") {
@@ -83,68 +85,70 @@ class Scanner
                     self::$reader = fgetc($file);
                 }
 
+                $bufferAux = $this->buffer;
                 $this->buffer = [];
-                return Constantes::$NUM_FLOAT;
+                return $this->returnLexeme(Constantes::$NUM_FLOAT, $bufferAux);
 
             } elseif(self::$reader == "(") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$ABRE_PARENTESE;
+                return $this->returnLexeme(Constantes::$ABRE_PARENTESE, $this->buffer);
 
             } elseif(self::$reader == ")") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$FECHA_PARENTESE;
+                return $this->returnLexeme(Constantes::$FECHA_PARENTESE, $this->buffer);
 
             } elseif(self::$reader == "{") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$ABRE_CHAVE;
+                return $this->returnLexeme(Constantes::$ABRE_CHAVE, $this->buffer);
 
             } elseif(self::$reader == "}") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$FECHA_CHAVE;
+                return $this->returnLexeme(Constantes::$FECHA_CHAVE, $this->buffer);
 
             } elseif(self::$reader == ",") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$VIRGULA;
+                return $this->returnLexeme(Constantes::$VIRGULA, $this->buffer);
 
             } elseif(self::$reader == ";") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$PONTO_VIRGULA;
+                return $this->returnLexeme(Constantes::$PONTO_VIRGULA, $this->buffer);
 
             } elseif(self::$reader == "+") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$ADICAO;
+                return $this->returnLexeme(Constantes::$ADICAO, $this->buffer);
 
             } elseif(self::$reader == "-") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$SUBTRACAO;
+                return $this->returnLexeme(Constantes::$SUBTRACAO, $this->buffer);
 
             } elseif(self::$reader == "*") {
                 $this->count();
                 self::$reader = fgetc($file);
 
-                return Constantes::$MULTIPLICACAO;
+                return $this->returnLexeme(Constantes::$MULTIPLICACAO, $this->buffer);
 
             } elseif(self::$reader == "/") {
                 $this->count();
                 self::$reader = fgetc($file);
 
                 if (self::$reader == "/") {
+                    $this->line++;
                     while (true) {
                         self::$reader = fgetc($file);
 
@@ -169,8 +173,9 @@ class Scanner
                         }
                     }
                 } else {
+                    $bufferAux = $this->buffer;
                     $this->buffer = [];
-                    return Constantes::$DIVISAO;
+                    return $this->returnLexeme(Constantes::$DIVISAO, $bufferAux);
                 }
 
             } elseif(self::$reader == "'") {
@@ -185,7 +190,7 @@ class Scanner
                 }
 
                 self::$reader = fgetc($file);
-                return Constantes::$CHAR;
+                return $this->returnLexeme(Constantes::$CHAR, $this->buffer);
 
             } elseif(self::$reader == "!") {
 
@@ -195,10 +200,11 @@ class Scanner
 
                 if (self::$reader == "=") {
                     $this->count();
+                    $bufferAux = $this->buffer;
                     $this->buffer = [];
                     self::$reader = fgetc($file);
 
-                    return Constantes::$DIFERENTE;
+                    return $this->returnLexeme(Constantes::$DIFERENTE, $bufferAux);
                 }
 
                 throw new \Exception( "Erro na linha: {$this->line}, coluna: {$this->column}. Erro exclamação sozinha, espera-se um '=' depois dela. \n");
@@ -211,14 +217,16 @@ class Scanner
 
                 if (self::$reader == "=") {
                     $this->count();
+                    $bufferAux = $this->buffer;
                     $this->buffer = [];
                     self::$reader = fgetc($file);
 
-                    return Constantes::$MAIOR_IGUAL;
+                    return $this->returnLexeme(Constantes::$MAIOR_IGUAL, $bufferAux);
                 }
 
+                $bufferAux = $this->buffer;
                 $this->buffer = [];
-                return Constantes::$MAIOR;
+                return $this->returnLexeme(Constantes::$MAIOR, $bufferAux);
 
             } elseif(self::$reader == "<") {
 
@@ -229,14 +237,16 @@ class Scanner
                 if (self::$reader == "=") {
 
                     $this->count();
+                    $bufferAux = $this->buffer;
                     $this->buffer = [];
                     self::$reader = fgetc($file);
 
-                    return Constantes::$MENOR_IGUAL;
+                    return $this->returnLexeme(Constantes::$MENOR_IGUAL, $bufferAux);
                 }
 
+                $bufferAux = $this->buffer;
                 $this->buffer = [];
-                return Constantes::$MENOR;
+                return $this->returnLexeme(Constantes::$MENOR, $bufferAux);
 
             } elseif(self::$reader == "=") {
 
@@ -247,14 +257,16 @@ class Scanner
                 if (self::$reader == "=") {
 
                     $this->count();
+                    $bufferAux = $this->buffer;
                     $this->buffer = [];
                     self::$reader = fgetc($file);
 
-                    return Constantes::$COMPARACAO;
+                    return $this->returnLexeme(Constantes::$COMPARACAO, $bufferAux);
                 }
 
+                $bufferAux = $this->buffer;
                 $this->buffer = [];
-                return Constantes::$ATRIBUICAO;
+                return $this->returnLexeme(Constantes::$ATRIBUICAO, $bufferAux);
 
             } elseif($this->isLetter(self::$reader) or self::$reader == "_") {
 
@@ -268,17 +280,21 @@ class Scanner
                     $check = $this->checkReservedWord($this->buffer, true);
 
                     if (!empty($check)) {
+                        $bufferAux = $this->buffer;
                         $this->buffer = [];
                         self::$reader = fgetc($file);
-                        return $check;
+                        return $this->returnLexeme($check, $bufferAux);
+//                        return $check;
                     }
 
                     self::$reader = fgetc($file);
                     continue;
                 }
 
+                $bufferAux = $this->buffer;
                 $this->buffer = [];
-                return $this->checkReservedWord($this->buffer);
+                $id = $this->checkReservedWord($this->buffer);
+                return $this->returnLexeme($id, $bufferAux);
             } elseif (feof($file)) {
                 die();
             } else {
@@ -318,7 +334,7 @@ class Scanner
         return false;
     }
 
-    function checkReservedWord(array $buffer, $flag = false)
+    private function checkReservedWord(array $buffer, $flag = false)
     {
         $lexeme = implode("", $buffer);
 
@@ -347,6 +363,11 @@ class Scanner
                 }
                 return Constantes::$IDENTIFICADOR;
         }
+    }
+
+    private function returnLexeme(int $id, array $buffer): array
+    {
+        return ['id' => $id, 'lexeme' => implode("", $buffer)];
     }
 
     /**

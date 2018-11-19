@@ -1,7 +1,8 @@
-int main(){
-    x = 10;
-    y = 5;
-    if(x == 10){
-        x = x + y;
-    }
+// adasdasddasdas d asd asd ad
+// dasdasdasdas
+int main() {
+    int x;
+    float y;
+
+    y = x;
 }
