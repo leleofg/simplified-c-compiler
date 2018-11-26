@@ -283,6 +283,9 @@ class Scanner
                         $bufferAux = $this->buffer;
                         $this->buffer = [];
                         self::$reader = fgetc($file);
+//                        if($bufferAux[0] == 'f' && $bufferAux[1] == 'o') {
+//                            print_r($bufferAux); exit;
+//                        }
                         return $this->returnLexeme($check, $bufferAux);
 //                        return $check;
                     }

@@ -1,8 +1,43 @@
-// adasdasddasdas d asd asd ad
-// dasdasdasdas
+//
 int main() {
-    int x;
-    float y;
+    int x,y,z,a;
+    float h;int c;float w,k,b;
+    int p;
+
+    c = 'x'*'2';
+    x = y+x;
+    w = (5+x)+(((y)*8-5)* 7);
+    /** /** /*
+       teste &%
+    ***/
+
+
+
+    do{
+
+        w = w + 1;
+
+    }while  (y<10);
+
 
     y = x;
+
+    p = 1 + 1 + 1+ 1 + 1;
+
+    while (x>w) {
+       float y,a;
+        w = w +1;
+        y = x;
+    }
+
+    a = 0;
+
+    if (w != x)
+    {
+        float a;
+
+        p = 10;
+    }else
+        p = '1';
+
 }

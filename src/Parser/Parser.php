@@ -12,6 +12,9 @@ class Parser
     private $scope = 0;
     private $tableSymbols = [];
     private $op = [];
+    private $T = 0;
+    private $L = 0;
+    private $Laux = null;
 
     public function __construct($file)
     {
@@ -144,6 +147,10 @@ class Parser
         }
 
         if($id['id'] == Constantes::$PR_IF) {
+            echo "L{$this->L}: \n";
+            $this->Laux = $this->L;
+            $this->L++;
+
             $id = $this->scanner->scan($this->file);
 
             if($id['id'] != Constantes::$ABRE_PARENTESE) {
@@ -158,8 +165,13 @@ class Parser
 
             $id = $this->scanner->scan($this->file);
 
+            echo "IF T{$this->T} == 0 GOTO L{$this->L} \n";
+
             if($id['id'] == Constantes::$ABRE_CHAVE or $id['id'] == Constantes::$IDENTIFICADOR or $id['id'] == Constantes::$PR_IF or $id['id'] == Constantes::$PR_ELSE or $id['id'] == Constantes::$PR_WHILE or $id['id'] == Constantes::$PR_DO) {
-                return $this->command($id);
+                $command = $this->command($id);
+                echo "GOTO L{$this->Laux} \n";
+                echo "L{$this->L}: \n";
+                return $command;
             }
         }
 
@@ -180,6 +192,8 @@ class Parser
             throw new \Exception( "ERRO, falta IDENTIFICADOR para a atribuição. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
         }
 
+        $aux = $id;
+
         $op1 = $this->searchInTableSymbols($id['lexeme']);
 
         $id = $this->scanner->scan($this->file);
@@ -190,8 +204,27 @@ class Parser
 
         $id = $this->aritExpr();
 
-        $aux = end($this->op);
-        $op2 = $this->searchInTableSymbols($aux['lexeme']);
+        if(count($this->op) >= 2) {
+            foreach($this->op as $o) {
+                if($o['id'] == Constantes::$IDENTIFICADOR) {
+                    $codigo = $this->searchInTableSymbols($o['lexeme']);
+                    if($codigo == Constantes::$PR_FLOAT or $codigo == Constantes::$NUM_FLOAT){
+                        $op2 = $codigo;
+                    } else {
+                        $op2 = $codigo;
+                    }
+                } else {
+                    $op2 = Constantes::$NUM_INT;
+                }
+            }
+        } else {
+            $aux = end($this->op);
+            if($aux['id'] == Constantes::$IDENTIFICADOR) {
+                $op2 = $this->searchInTableSymbols($aux['lexeme']);
+            } else {
+                $op2 = $aux['id'];
+            }
+        }
 
         if(($op1 == Constantes::$NUM_INT or $op1 == Constantes::$PR_INT) and ($op2 == Constantes::$NUM_FLOAT || $op2 == Constantes::$PR_FLOAT)) {
             throw new \Exception( "ERRO! Não pode atribuir um float a um int. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
@@ -208,6 +241,10 @@ class Parser
 
     private function iteration(array $id)
     {
+        echo "L{$this->L}: \n";
+        $this->Laux = $this->L;
+        $this->L++;
+
         if($id['id'] == Constantes::$PR_DO) {
             $id = $this->scanner->scan($this->file);
 
@@ -235,6 +272,7 @@ class Parser
                 throw new \Exception( "ERRO, falta um ponto e vírgula logo após o fecha parentese depois de uma expressao relacional. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
             }
 
+            echo "if T{$this->T} != 0 GOTO L{$this->Laux}\n";
             return $this->scanner->scan($this->file);
         }
 
@@ -246,6 +284,8 @@ class Parser
 
         $id = $this->relationalExpr();
 
+        echo "if T{$this->T} == 0 GOTO L{$this->L} \n";
+
         if($id['id'] != Constantes::$FECHA_PARENTESE) {
             throw new \Exception( "ERRO, falta um fecha parentese depois de uma expressao relacional. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
         }
@@ -253,7 +293,10 @@ class Parser
         $id = $this->scanner->scan($this->file);
 
         if($id['id'] == Constantes::$IDENTIFICADOR or $id['id'] == Constantes::$PR_IF or $id['id'] == Constantes::$PR_ELSE or $id['id'] == Constantes::$ABRE_CHAVE or $id['id'] == Constantes::$PR_WHILE or $id['id'] == Constantes::$PR_DO) {
-            return $this->command($id);
+            $command = $this->command($id);
+            echo "GOTO L{$this->Laux} \n";
+            echo "L{$this->L}:\n";
+            return $command;
         }
     }
 
@@ -265,8 +308,20 @@ class Parser
 
             $id2 = $this->aritExpr();
 
+            $aux = $this->op;
+
+            $opRel = $id['lexeme'];
+            $lexeme1 = $aux[0]['lexeme'];
+            if(isset($aux[1])) {
+                $lexeme2 = $aux[1]['lexeme'];
+            }
+
             if(count($this->op) > 1) {
                 $this->semantic($this->op, $id);
+            }
+
+            if(!empty($lexeme2)) {
+                echo "T{$this->T} = {$lexeme1} {$opRel} {$lexeme2} \n";
             }
 
             return $id2;
@@ -284,7 +339,15 @@ class Parser
             return $id;
         }
 
+        $aux2 = $this->op;
+
         $this->semantic($this->op, $id);
+
+        $operator = $this->checkOperator($id);
+
+        echo "T{$this->T} = {$this->op[0]['lexeme']} $operator {$aux2[1]['lexeme']} \n";
+        $this->T++;
+
         return $aux;
     }
 
@@ -301,7 +364,15 @@ class Parser
             return $id;
         }
 
+        $aux2 = $this->op;
+
         $this->semantic($this->op, $id);
+
+        $operator = $this->checkOperator($id);
+
+        echo "T{$this->T} = {$aux2[0]['lexeme']} $operator {$aux2[1]['lexeme']} \n";
+        $this->T++;
+
         return $aux;
     }
 
@@ -319,7 +390,18 @@ class Parser
             return $id;
         }
 
+        $aux2 = $this->op;
+
         $this->semantic($this->op, $id);
+
+        $operator = $this->checkOperator($id);
+
+        if(isset($aux[0]) && isset($aux[1])) {
+            echo "T{$this->T} = {$aux2[0]['lexeme']} $operator {$aux2[1]['lexeme']} \n";
+        }
+
+        $this->T++;
+
         return $aux;
     }
 
@@ -336,7 +418,18 @@ class Parser
             return $id;
         }
 
+        $aux2 = $this->op;
+
         $this->semantic($this->op, $id);
+
+        $operator = $this->checkOperator($id);
+
+        if(isset($aux[0]) && isset($aux[1])) {
+            echo "T{$this->T} = {$aux2[0]['lexeme']} $operator {$aux2[1]['lexeme']} \n";
+        }
+
+        $this->T++;
+
         return $aux;
     }
 
@@ -390,14 +483,14 @@ class Parser
 
     private function searchInTableSymbols($lexeme)
     {
-        $tableSymbolsReverse = array_reverse($this->tableSymbols, true);
+        $tableSymbolsReverse = array_reverse($this->tableSymbols);
         foreach($tableSymbolsReverse as $tb) {
             if($tb['lexeme'] == $lexeme) {
                 return $tb['id'];
             }
         }
 
-        throw new \Exception( "ERRO! Variável não declarada. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
+        throw new \Exception( "ERROx! Variável não declarada. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
     }
 
     private function semantic(array $op, $operator)
@@ -405,8 +498,6 @@ class Parser
         if(empty($op)) {
             return;
         }
-
-//        echo $op[0]['lexeme'] . " - " . $op[1]['lexeme'] . "\n";
 
         if($op[0]['id'] == Constantes::$IDENTIFICADOR) {
             $op1 = $this->searchInTableSymbols($op[0]['lexeme']);
@@ -420,8 +511,6 @@ class Parser
             $op2 = $op[1]['id'];
         }
 
-//        echo $op1 . " - " . $op2 . "\n";
-
         if($op1 == Constantes::$NUM_INT or $op1 == Constantes::$PR_INT) {
             if($operator['id'] == Constantes::$DIVISAO && ($op2 == Constantes::$NUM_INT or $op2 == Constantes::$PR_INT)) {
                 throw new \Exception("ERRO! Operação entre inteiro com '/' resulta em um float. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
@@ -432,7 +521,8 @@ class Parser
             }
 
             if ($op2 == Constantes::$NUM_FLOAT or $op2 == Constantes::$PR_FLOAT) {
-
+                echo "T{$this->T} = (float) {$op[0]['lexeme']} \n";
+                $this->T++;
             }
         }
 
@@ -444,7 +534,8 @@ class Parser
 
         if($op1 == Constantes::$PR_FLOAT or $op1 == Constantes::$NUM_FLOAT) {
             if($op2 == Constantes::$NUM_INT or $op2 == Constantes::$PR_INT) {
-
+                echo "T{$this->T} = (float) {$op[1]['lexeme']} \n";
+                $this->T++;
             } else {
                 throw new \Exception("ERRO! Tipos incompatíveis. Erro na linha: {$this->scanner->getLine()}, coluna: {$this->scanner->getColumn()}. \n");
             }
@@ -457,5 +548,20 @@ class Parser
         }
 
         $this->op = array_values($this->op);
+    }
+
+    private function checkOperator($id)
+    {
+        if($id['id'] == Constantes::$SUBTRACAO) {
+            $operator = "-";
+        } elseif ($id['id'] == Constantes::$ADICAO) {
+            $operator = "+";
+        } elseif ($id['id'] == Constantes::$DIVISAO) {
+            $operator = "/";
+        } elseif ($id['id'] == Constantes::$MULTIPLICACAO) {
+            $operator = "*";
+        }
+
+        return $operator;
     }
 }
